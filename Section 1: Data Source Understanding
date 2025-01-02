@@ -1,0 +1,73 @@
+1. FACEBOOK ADS
+
+    Data Structure:
+    Primarily hierarchical with nested structures like Campaigns → Ad Sets → Ads.
+    Data is stored and accessed in a structured format via their Graph API.
+    Common data points include impressions, clicks, conversions, spend, etc.
+    
+    API Access:
+    Facebook Graph API allows programmatic access.
+    OAuth-based authentication.
+    Supports querying and retrieving advertising insights, ad performance metrics, and audience data.
+    
+    Data Types:
+    Numeric: Clicks, impressions, spend.
+    Text: Campaign names, ad creative.
+    Boolean: Active/inactive status.
+    Timestamps: Start and end dates for campaigns.
+
+
+2. Google Ads
+    Data Structure:
+    Similar to Facebook Ads, Google Ads has a hierarchical structure: Campaigns → Ad Groups → Ads.
+    Data is stored in tables and is retrievable via Google Ads API.
+    Includes dimensions like device type, geographic location, and keywords.
+    
+    API Access:
+    Google Ads API (formerly AdWords API) allows developers to interact with campaign data.
+    OAuth 2.0-based authentication.
+    Offers granular access to metrics, reports, and real-time adjustments.
+    
+    Data Types:
+    Numeric: Clicks, impressions, CPC (Cost-Per-Click), CPA (Cost-Per-Acquisition).
+    Categorical: Device types, audience segments.
+    Text: Ad copy, keywords.
+    Dates and timestamps for campaign scheduling and reporting.
+
+
+3. RDS (Relational Database Service)
+
+    Data Structure:
+    Highly structured and relational. Data is organized in tables with rows and columns.
+    Supports normalization and relationships (e.g., one-to-many, many-to-many).
+    Schema-based structure using SQL.
+    
+    API Access:
+    Managed database service on AWS, accessible through SQL queries or database connectors (JDBC, ODBC, etc.).
+    No direct advertising API like Facebook or Google Ads.
+    Secure access with AWS IAM or traditional database credentials.
+    
+    Data Types:
+    Numeric: Integers, decimals for transactional or analytical data.
+    Text: VARCHAR, TEXT fields for string data.
+    Boolean: TRUE/FALSE for flags.
+    Date/Time: DATE, TIMESTAMP for time-based data.
+
+
+4. CleverTap
+
+    Data Structure:
+    Event-driven and user-centric data structure.
+    Organized into events, profiles, and funnels.
+    Stores data in a semi-structured format, making it suitable for behavioral analytics.
+    
+    API Access:
+    Provides a RESTful API for data ingestion and retrieval.
+    API key and account-specific tokens for authentication.
+    Offers SDKs for mobile and web platforms to track events and user properties.
+    
+    Data Types:
+    Numeric: Event counts, purchase amounts.
+    Text: User properties (e.g., name, email).
+    Categorical: User segments, device types.
+    JSON: Event payloads are often stored in key-value pairs for flexibility.
