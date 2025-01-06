@@ -1,0 +1,16 @@
+1. Scalability
+Auto-scaling: Kubernetes can automatically scale up or down the number of pods (containers) running your ETL pipeline based on workload and resource usage. This ensures that the system can handle fluctuating data volumes efficiently without manual intervention.
+Horizontal Pod Autoscaler (HPA): HPA in Kubernetes adjusts the number of pods in a deployment based on CPU, memory, or custom metrics like queue size in a message broker.
+Parallelism: Kubernetes allows running multiple instances of ETL tasks concurrently, enabling faster processing of large datasets.
+
+2. Fault Tolerance
+Self-healing: Kubernetes continuously monitors the health of pods and replaces failed or unresponsive pods automatically, ensuring high availability of ETL processes.
+ReplicaSets: By maintaining a desired number of replicas of your ETL application, Kubernetes ensures that if a pod fails, another is spun up to replace it.
+Node Failover: If a node in the Kubernetes cluster goes down, the workloads are redistributed to other healthy nodes, minimizing downtime.
+
+3. Resource Optimization
+Resource Requests and Limits: Kubernetes lets you define resource requests (minimum guaranteed resources) and limits (maximum allowed resources) for your ETL containers. This ensures fair usage and prevents resource starvation or over-utilization.
+Efficient Scheduling: The Kubernetes scheduler assigns ETL pods to nodes based on resource availability, affinity/anti-affinity rules, and other constraints, optimizing cluster resource utilization.
+Batch Processing: Kubernetes Jobs or CronJobs are used for ETL pipelines that require periodic or batch processing. These jobs can be configured to run at specific times or based on specific triggers.
+
+
