@@ -1,0 +1,40 @@
+import json
+import pandas as pd
+from sqlalchemy import create_engine
+
+def transform_facebook_ads_data(json_data, redshift_table, redshift_connection_string):
+
+    try:
+        # Parse JSON data
+        ads_data = json.loads(json_data)
+
+        # Convert to a Pandas DataFrame
+        df = pd.DataFrame(ads_data)
+
+        # Ensure column order matches Redshift schema
+        redshift_schema_columns = [
+            "ad_id",
+            "campaign_id",
+            "spend",
+            "impressions",
+            "clicks",
+            "date_start",
+            "date_end"
+        ]
+        df = df[redshift_schema_columns]
+
+        # Data type adjustments (if needed)
+        df['spend'] = df['spend'].astype(float)
+        df['impressions'] = df['impressions'].astype(int)
+        df['clicks'] = df['clicks'].astype(int)
+        df['date_start'] = pd.to_datetime(df['date_start'])
+        df['date_end'] = pd.to_datetime(df['date_end'])
+
+        # Write data to Redshift
+        engine = create_engine(redshift_connection_string)
+        df.to_sql(redshift_table, engine, if_exists='append', index=False)
+
+        print(f"Data successfully loaded into Redshift table '{redshift_table}'.")
+
+    except Exception as e:
+        print(f"Error transforming or loading data: {str(e)}")
