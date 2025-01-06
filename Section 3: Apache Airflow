@@ -1,0 +1,171 @@
+Apache Airflow -
+
+Apache Airflow is an open-source platform to programmatically author, schedule, and monitor workflows as Directed Acyclic Graphs (DAGs). 
+It is commonly used for orchestrating ETL (Extract, Transform, Load) pipelines, making it easier to manage and automate data workflows across various stages.
+
+
+
+
+How Airflow Facilitates ETL Pipeline Orchestration -
+
+Airflow allows defining ETL pipelines as Python code using DAGs, making the process flexible, repeatable, and version-controlled.
+Airflow's scheduler ensures that tasks run on a predefined schedule (e.g. hourly, daily) or based on dependencies (e.g., Task Etracting_Data must finish before Task Loading_Data).
+Tasks in Airflow DAGs are connected by dependencies, ensuring a specific execution order (e.g. Extract_Data >> Transform_Data >> Load_Data).
+Airflow can retry failed tasks automatically, alert on errors, and ensure workflow robustness.
+It supports distributed execution, enabling scaling pipelines across multiple workers.
+Airflow integrates with external systems like APIs (e.g. Facebook Ads, Google Ads), databases (e.g. RDS), and cloud services (e.g. S3).
+Airflow web UI allows monitoring task execution status, reviewing logs, and manually triggering or pausing workflows.
+
+
+
+
+
+
+Example of an Airflow DAG (Directed Acyclic Graph) for scheduling and orchestrating the ETL process described in Section 2.
+
+
+from datetime import datetime, timedelta
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.operators.email import EmailOperator
+
+# Function Definitions
+def extract_facebook_ads_data():
+    import boto3
+    import pandas as pd
+
+    # Simulate Facebook Ads data extraction
+    facebook_data = [{"campaign_id": 1, "spend": 100, "clicks": 10}]
+    df = pd.DataFrame(facebook_data)
+
+    # Save data as Parquet to S3
+    s3 = boto3.client('s3')
+    file_path = 'raw-data/facebook_ads.parquet'
+    bucket_name = 'my-bucket'
+    df.to_parquet('/tmp/facebook_ads.parquet', index=False)
+    s3.upload_file('/tmp/facebook_ads.parquet', bucket_name, file_path)
+
+def extract_google_ads_data():
+    import boto3
+    import pandas as pd
+
+    # Simulate Google Ads data extraction
+    google_data = [{"campaign_id": 2, "spend": 200, "clicks": 20}]
+    df = pd.DataFrame(google_data)
+
+    # Save data as Parquet to S3
+    s3 = boto3.client('s3')
+    file_path = 'raw-data/google_ads.parquet'
+    bucket_name = 'my-bucket'
+    df.to_parquet('/tmp/google_ads.parquet', index=False)
+    s3.upload_file('/tmp/google_ads.parquet', bucket_name, file_path)
+
+def transform_unify_schema_load_to_rds():
+    import boto3
+    import pandas as pd
+    from io import BytesIO
+
+    # S3 bucket and unified schema
+    bucket_name = 'my-bucket'
+    unified_schema = ['campaign_id', 'spend', 'clicks']
+
+    # Load Facebook Ads data
+    s3 = boto3.client('s3')
+    facebook_obj = s3.get_object(Bucket=bucket_name, Key='raw-data/facebook_ads.parquet')
+    facebook_df = pd.read_parquet(BytesIO(facebook_obj['Body'].read()))
+
+    # Load Google Ads data
+    google_obj = s3.get_object(Bucket=bucket_name, Key='raw-data/google_ads.parquet')
+    google_df = pd.read_parquet(BytesIO(google_obj['Body'].read()))
+
+    # Unify schema
+    facebook_df = facebook_df[unified_schema]
+    google_df = google_df[unified_schema]
+
+    # Combine data
+    unified_df = pd.concat([facebook_df, google_df])
+
+    # Load to RDS (example with SQLAlchemy)
+    from sqlalchemy import create_engine
+    engine = create_engine('postgresql+psycopg2://user:password@rds-endpoint:5432/database')
+    unified_df.to_sql('ads_data', engine, if_exists='append', index=False)
+
+# DAG Definitions
+def create_dag(dag_id, schedule, default_args, tasks):
+    dag = DAG(dag_id, default_args=default_args, schedule_interval=schedule)
+    with dag:
+        for task in tasks:
+            task()
+    return dag
+
+# DAG 1: Extract Data and Load to S3
+def create_dag_1():
+    default_args = {
+        'owner': 'airflow',
+        'depends_on_past': False,
+        'retries': 1,
+        'retry_delay': timedelta(minutes=5),
+        'start_date': datetime(2025, 1, 1),
+        'email': ['alert@example.com'],
+        'email_on_failure': True,
+        'email_on_retry': False
+    }
+
+    with DAG('extract_data_to_s3', default_args=default_args, schedule_interval='@daily') as dag:
+        extract_facebook_task = PythonOperator(
+            task_id='extract_facebook_ads',
+            python_callable=extract_facebook_ads_data
+        )
+
+        extract_google_task = PythonOperator(
+            task_id='extract_google_ads',
+            python_callable=extract_google_ads_data
+        )
+
+        success_email_task = EmailOperator(
+            task_id='send_success_email',
+            to='alert@example.com',
+            subject='ETL Success: Extract Data to S3',
+            html_content='The ETL process to extract data to S3 has completed successfully.'
+        )
+
+        extract_facebook_task >> extract_google_task >> success_email_task
+
+    return dag
+
+
+
+# DAG 2: Transform, Unify Schema, and Load to RDS
+def create_dag_2():
+    default_args = {
+        'owner': 'airflow',
+        'depends_on_past': False,
+        'retries': 1,
+        'retry_delay': timedelta(minutes=5),
+        'start_date': datetime(2025, 1, 1),
+        'email': ['alert@example.com'],
+        'email_on_failure': True,
+        'email_on_retry': False
+    }
+
+    with DAG('transform_unify_load_rds', default_args=default_args, schedule_interval='@daily') as dag:
+        transform_load_task = PythonOperator(
+            task_id='transform_unify_load',
+            python_callable=transform_unify_schema_load_to_rds
+        )
+
+        success_email_task = EmailOperator(
+            task_id='send_success_email',
+            to='alert@example.com',
+            subject='ETL Success: Transform and Load to RDS',
+            html_content='The ETL process to transform and load data to RDS has completed successfully.'
+        )
+
+        transform_load_task >> success_email_task
+
+    return dag
+
+dag1 = create_dag_1()
+dag2 = create_dag_2()
+
+
